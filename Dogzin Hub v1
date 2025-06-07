@@ -8,42 +8,37 @@ ScreenGui.Name = "UniversalModMenu"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = playerGui
 
--- Frame do prompt de senha (modal)
+-- Prompt de senha
 local PromptFrame = Instance.new("Frame")
-PromptFrame.Name = "PromptFrame"
 PromptFrame.Size = UDim2.new(0, 300, 0, 150)
 PromptFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
 PromptFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 PromptFrame.BorderSizePixel = 0
 PromptFrame.Parent = ScreenGui
 
--- Texto instrução
 local Instruction = Instance.new("TextLabel")
 Instruction.Size = UDim2.new(1, -20, 0, 40)
 Instruction.Position = UDim2.new(0, 10, 0, 10)
 Instruction.BackgroundTransparency = 1
-Instruction.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instruction.TextColor3 = Color3.new(1, 1, 1)
 Instruction.Font = Enum.Font.GothamBold
 Instruction.TextSize = 20
 Instruction.Text = "Digite a senha para abrir o ModMenu:"
 Instruction.Parent = PromptFrame
 
--- Caixa de texto para senha
 local TextBox = Instance.new("TextBox")
 TextBox.Size = UDim2.new(1, -20, 0, 40)
 TextBox.Position = UDim2.new(0, 10, 0, 60)
 TextBox.ClearTextOnFocus = false
-TextBox.Text = ""
 TextBox.PlaceholderText = "Digite a senha aqui..."
-TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.Text = ""
+TextBox.TextColor3 = Color3.new(1, 1, 1)
 TextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 TextBox.Font = Enum.Font.GothamBold
 TextBox.TextSize = 18
 TextBox.Parent = PromptFrame
 
--- Botão para copiar link
 local CopyLinkButton = Instance.new("TextButton")
-CopyLinkButton.Name = "CopyLinkButton"
 CopyLinkButton.Text = "Copiar Link"
 CopyLinkButton.Size = UDim2.new(1, -20, 0, 30)
 CopyLinkButton.Position = UDim2.new(0, 10, 0, 105)
@@ -56,55 +51,38 @@ CopyLinkButton.Parent = PromptFrame
 CopyLinkButton.MouseButton1Click:Connect(function()
     if setclipboard then
         setclipboard("https://direct-link.net/1358125/KI0WACcKEvsJ")
-        print("Link copiado para o clipboard!")
-    else
-        warn("setclipboard não está disponível.")
     end
 end)
 
--- Frame principal (inicialmente invisível)
+-- Frame principal
 local Frame = Instance.new("ScrollingFrame")
-Frame.Name = "MainFrame"
 Frame.Size = UDim2.new(0, 200, 0, 300)
 Frame.Position = UDim2.new(0, 20, 0.5, -150)
 Frame.CanvasSize = UDim2.new(0, 0, 0, 600)
 Frame.ScrollBarThickness = 8
 Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Frame.BorderSizePixel = 0
-Frame.Parent = ScreenGui
 Frame.Visible = false
+Frame.Parent = ScreenGui
 
--- Abrir menu após senha correta
-local function abrirMenu()
-    PromptFrame:Destroy()
-    Frame.Visible = true
-end
+local SecondFrame = Instance.new("ScrollingFrame")
+SecondFrame.Size = Frame.Size
+SecondFrame.Position = UDim2.new(0, Frame.Position.X.Offset + Frame.Size.X.Offset + 10, 0.5, -150)
+SecondFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+SecondFrame.BorderSizePixel = 0
+SecondFrame.ScrollBarThickness = 8
+SecondFrame.CanvasSize = UDim2.new(0, 0, 0, 1000)
+SecondFrame.Visible = false
+SecondFrame.Parent = ScreenGui
 
--- Verificar senha
-TextBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local senha = TextBox.Text
-        if senha == "GIVEDOGZIN" then
-            abrirMenu()
-        else
-            TextBox.Text = ""
-            Instruction.Text = "Senha incorreta! Tente novamente:"
-        end
-    end
-end)
-
--- Drag do Frame principal
+-- Drag
 local UserInputService = game:GetService("UserInputService")
 local dragging, dragInput, dragStart, startPos
 
 local function update(input)
     local delta = input.Position - dragStart
-    Frame.Position = UDim2.new(
-        startPos.X.Scale,
-        startPos.X.Offset + delta.X,
-        startPos.Y.Scale,
-        startPos.Y.Offset + delta.Y
-    )
+    Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    SecondFrame.Position = UDim2.new(0, Frame.Position.X.Offset + Frame.Size.X.Offset + 10, Frame.Position.Y.Scale, Frame.Position.Y.Offset)
 end
 
 Frame.InputBegan:Connect(function(input)
@@ -112,150 +90,194 @@ Frame.InputBegan:Connect(function(input)
         dragging = true
         dragStart = input.Position
         startPos = Frame.Position
-
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
             end
-        end)
-    end
-end)
-
-Frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
-
--- Botão de fechar
-local Fechar = Instance.new("TextButton")
-Fechar.Size = UDim2.new(0, 30, 0, 30)
-Fechar.Position = UDim2.new(1, -35, 0, 5)
-Fechar.Text = "X"
-Fechar.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-Fechar.TextColor3 = Color3.fromRGB(255, 255, 255)
-Fechar.Font = Enum.Font.GothamBold
-Fechar.TextSize = 16
-Fechar.ZIndex = 2
-Fechar.Parent = Frame
-
-Fechar.MouseButton1Click:Connect(function()
-    Frame.Visible = false
-end)
-
--- Botão de minimizar
-local Minimizar = Instance.new("TextButton")
-Minimizar.Size = UDim2.new(0, 30, 0, 30)
-Minimizar.Position = UDim2.new(1, -70, 0, 5)
-Minimizar.Text = "-"
-Minimizar.BackgroundColor3 = Color3.fromRGB(150, 150, 0)
-Minimizar.TextColor3 = Color3.fromRGB(255, 255, 255)
-Minimizar.Font = Enum.Font.GothamBold
-Minimizar.TextSize = 20
-Minimizar.ZIndex = 2
-Minimizar.Parent = Frame
-
--- Conteúdo do menu
-local Conteudo = Instance.new("Frame")
-Conteudo.Name = "Conteudo"
-Conteudo.BackgroundTransparency = 1
-Conteudo.Size = UDim2.new(1, 0, 1, -40)
-Conteudo.Position = UDim2.new(0, 0, 0, 40)
-Conteudo.Parent = Frame
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = Conteudo
-UIListLayout.Padding = UDim.new(0, 5)
-
--- Alternar minimizado
-local minimizado = false
-local tamanhoOriginal = Frame.Size
-
-Minimizar.MouseButton1Click:Connect(function()
-    minimizado = not minimizado
-    Conteudo.Visible = not minimizado
-    if minimizado then
-        Frame.Size = UDim2.new(0, 200, 0, 40)
-        Minimizar.Text = "+"
-    else
-        Frame.Size = tamanhoOriginal
-        Minimizar.Text = "-"
-    end
-end)
-
--- Criar botão no menu
-local function criarBotao(nome, funcao)
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(1, -10, 0, 40)
-    Button.Position = UDim2.new(0, 5, 0, 0)
-    Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.Text = nome
-    Button.Font = Enum.Font.GothamBold
-    Button.TextSize = 16
-    Button.Parent = Conteudo
-    Button.MouseButton1Click:Connect(funcao)
-end
-
--- Botões do ModMenu
-criarBotao("Auto Gol Jogador", function()
-    local player = game.Players.LocalPlayer
-    local bola = workspace:FindFirstChild("Bola")
-    local gol = workspace:FindFirstChild("Gol")
-    if bola and gol and player.Character then
-        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = bola.CFrame + Vector3.new(0, 3, 0)
-            wait(0.5)
-            bola.CFrame = gol.CFrame
-            hrp.CFrame = gol.CFrame + Vector3.new(0, 3, -2)
-        end
-    end
-end)
-
-criarBotao("Auto Gol Bola", function()
-    local bola = workspace:FindFirstChild("Bola")
-    local gol = workspace:FindFirstChild("Gol")
-    if bola and gol then
-        bola.CFrame = gol.CFrame
-    end
-end)
-
-criarBotao("Speed Boost", function()
-    local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-    if humanoid then
-        humanoid.WalkSpeed = 100
-    end
-end)
-
-criarBotao("Ativar Voo", function()
-    local player = game.Players.LocalPlayer
-    local char = player.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    local bv = Instance.new("BodyVelocity")
-    bv.Velocity = Vector3.new(0, 0, 0)
-    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-    bv.Parent = hrp
-    game:GetService("RunService").Heartbeat:Connect(function()
-        if bv and bv.Parent then
-            local mouse = player:GetMouse()
-            local dir = (mouse.Hit.Position - hrp.Position).Unit
-            bv.Velocity = dir * 50
-        end
-    end)
-end)
-
-criarBotao("Resetar", function()
-    local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-    if humanoid then
-        humanoid.Health = 0
-    end
-end)
+            end)
+                
+                Frame.InputChanged:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseMovement then
+                        dragInput = input
+                    end
+                end)
+                
+                UserInputService.InputChanged:Connect(function(input)
+                    if input == dragInput and dragging then update(input) end
+                    end)
+                        
+                        -- Fechar e Minimizar
+                        local Fechar = Instance.new("TextButton")
+                        Fechar.Size = UDim2.new(0, 30, 0, 30)
+                        Fechar.Position = UDim2.new(1, -35, 0, 5)
+                        Fechar.Text = "X"
+                        Fechar.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+                        Fechar.TextColor3 = Color3.new(1, 1, 1)
+                        Fechar.Font = Enum.Font.GothamBold
+                        Fechar.TextSize = 16
+                        Fechar.Parent = Frame
+                        Fechar.MouseButton1Click:Connect(function()
+                            Frame.Visible = false
+                            SecondFrame.Visible = false
+                        end)
+                        
+                        local Minimizar = Instance.new("TextButton")
+                        Minimizar.Size = UDim2.new(0, 30, 0, 30)
+                        Minimizar.Position = UDim2.new(1, -70, 0, 5)
+                        Minimizar.Text = "-"
+                        Minimizar.BackgroundColor3 = Color3.fromRGB(150, 150, 0)
+                        Minimizar.TextColor3 = Color3.new(1, 1, 1)
+                        Minimizar.Font = Enum.Font.GothamBold
+                        Minimizar.TextSize = 20
+                        Minimizar.Parent = Frame
+                        
+                        -- Conteúdo do Frame
+                        local Conteudo = Instance.new("Frame")
+                        Conteudo.BackgroundTransparency = 1
+                        Conteudo.Size = UDim2.new(1, 0, 1, -40)
+                        Conteudo.Position = UDim2.new(0, 0, 0, 40)
+                        Conteudo.Name = "Conteudo"
+                        Conteudo.Parent = Frame
+                        
+                        local UIListLayout = Instance.new("UIListLayout")
+                        UIListLayout.Padding = UDim.new(0, 5)
+                        UIListLayout.Parent = Conteudo
+                        
+                        -- Botão Main
+                        local MainButton = Instance.new("TextButton")
+                        MainButton.Size = UDim2.new(1, -10, 0, 30)
+                        MainButton.Text = "Main"
+                        MainButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+                        MainButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        MainButton.Font = Enum.Font.GothamBold
+                        MainButton.TextSize = 16
+                        MainButton.Parent = Conteudo
+                        MainButton.MouseButton1Click:Connect(function()
+                            SecondFrame.Visible = not SecondFrame.Visible
+                        end)
+                        
+                        -- Botão Script
+                        local ScriptButton = Instance.new("TextButton")
+                        ScriptButton.Size = UDim2.new(1, -10, 0, 30)
+                        ScriptButton.Text = "Script (Não funciona ainda)"
+                        ScriptButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+                        ScriptButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        ScriptButton.Font = Enum.Font.GothamBold
+                        ScriptButton.TextSize = 16
+                        ScriptButton.Parent = Conteudo
+                        
+                        -- Minimizar frame
+                        local tamanhoOriginal = Frame.Size
+                        local minimizado = false
+                        Minimizar.MouseButton1Click:Connect(function()
+                            minimizado = not minimizado
+                            Conteudo.Visible = not minimizado
+                            Frame.Size = minimizado and UDim2.new(0, 200, 0, 40) or tamanhoOriginal
+                            Minimizar.Text = minimizado and "+" or "-"
+                            SecondFrame.Visible = false
+                        end)
+                        
+                        -- Mostrar menu com senha
+                        local function abrirMenu()
+                            PromptFrame:Destroy()
+                            Frame.Visible = true
+                        end
+                        
+                        TextBox.FocusLost:Connect(function(enter)
+                            if enter then
+                                if TextBox.Text == "GIVEDOGZIN" then
+                                    abrirMenu()
+                                else
+                                    TextBox.Text = ""
+                                    Instruction.Text = "Senha incorreta! Tente novamente:"
+                                end
+                            end
+                        end)
+                        
+                        -- Botões do segundo frame
+                        local layout2 = Instance.new("UIListLayout")
+                        layout2.Padding = UDim.new(0, 5)
+                        layout2.Parent = SecondFrame
+                        
+                        local function criarBotao(nome, callback)
+                            local btn = Instance.new("TextButton")
+                            btn.Size = UDim2.new(1, -10, 0, 30)
+                            btn.Text = nome
+                            btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+                            btn.TextColor3 = Color3.new(1, 1, 1)
+                            btn.Font = Enum.Font.GothamBold
+                            btn.TextSize = 16
+                            btn.Parent = SecondFrame
+                            if callback then btn.MouseButton1Click:Connect(callback) end
+                            end
+                                
+                                local noclip = false
+                                criarBotao("Noclip", function()
+                                    noclip = not noclip
+                                    local char = player.Character
+                                    if char then
+                                        for _, part in pairs(char:GetDescendants()) do
+                                            if part:IsA("BasePart") then
+                                                part.CanCollide = not noclip
+                                            end
+                                        end
+                                    end
+                                end)
+                                
+                                local speedClicks = 0
+                                criarBotao("Speed", function()
+                                    speedClicks += 1
+                                    if speedClicks <= 10 then
+                                        player.Character.Humanoid.WalkSpeed = 16 + speedClicks * 10
+                                    else
+                                        player.Character.Humanoid.WalkSpeed = 16
+                                        speedClicks = 0
+                                    end
+                                end)
+                                
+                                criarBotao("Anti Kick", function()
+                                    print("Anti Kick ativo (simulado)")
+                                end)
+                                
+                                criarBotao("AntiBan", function()
+                                    local players = game:GetService("Players")
+                                    local dono = players:GetPlayers()[1] -- Simula o dono
+                                    if dono then
+                                        player:Kick("AntiBan: dono detectado")
+                                    end
+                                end)
+                                
+                                local jumpClicks = 0
+                                criarBotao("Super Pulo", function()
+                                    jumpClicks += 1
+                                    if jumpClicks <= 10 then
+                                        player.Character.Humanoid.JumpPower = 50 + jumpClicks * 10
+                                    else
+                                        jumpClicks = 0
+                                        player.Character.Humanoid.JumpPower = 50
+                                    end
+                                end)
+                                
+                                criarBotao("Teleporte", function()
+                                    game.Players.LocalPlayer.Chatted:Connect(function(msg)
+                                        if msg:sub(1, 4) == ";tp " then
+                                            local target = msg:sub(5)
+                                            local targetPlayer = game.Players:FindFirstChild(target)
+                                            if targetPlayer and targetPlayer.Character and player.Character then
+                                                player.Character:SetPrimaryPartCFrame(targetPlayer.Character:GetPrimaryPartCFrame())
+                                            end
+                                        end
+                                    end)
+                                end)
+                                
+                                criarBotao("EsconderNick", function()
+                                    print("EsconderNick ativado (simulado)")
+                                end)
+                                
+                                criarBotao("Rejoin", function()
+                                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+                                end)
+                                
+                                criarBotao("Trocar Server", function()
+                                    game:GetService("TeleportService"):Teleport(game.PlaceId)
+                                end)
